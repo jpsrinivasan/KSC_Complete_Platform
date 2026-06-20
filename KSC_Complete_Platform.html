@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#F59E0B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KSC">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").then(()=>{
+      console.log("SW registered");
+    }).catch(e=>console.log("SW error",e));
+  });
+}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krishnagiri School Connect — Complete Platform</title>
+<style>
+/* ═══════ DESIGN TOKENS ═══════ */
+:root {
+  --sf:#F59E0B; --sf2:#D97706; --sf3:#FEF3C7; --sf4:#FDE68A;
+  --green:#059669; --gl:#D1FAE5; --gl2:#A7F3D0;
+  --red:#DC2626; --rl:#FEE2E2;
+  --orange:#EA580C; --ol:#FFEDD5;
+  --blue:#2563EB; --bl:#DBEAFE;
+  --purple:#7C3AED; --pl:#EDE9FE;
+  --sky:#0284C7; --skl:#E0F2FE;
+  --ink:#1C1917; --g8:#292524; --g7:#44403C; --g5:#78716C;
+  --g3:#A8A29E; --g1:#E7E5E4; --g0:#F5F5F4;
+  --white:#FFFFFF;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+body{font-family:'Inter',system-ui,sans-serif;background:#1a2744;color:var(--ink);min-height:100vh;overflow-x:hidden;}
+
+/* ═══════ SPLASH / PORTAL SELECT ═══════ */
+#portal-select{position:fixed;inset:0;z-index:10000;background:linear-gradient(135deg,#0f1f3d 0%,#1a3a5c 40%,#0d2137 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.splash-logo{font-size:64px;margin-bottom:12px;filter:drop-shadow(0 0 24px rgba(245,158,11,.4));}
+.splash-title{font-size:28px;font-weight:900;color:#fff;margin-bottom:4px;text-align:center;}
+.splash-title span{color:var(--sf);}
+.splash-ta{font-size:18px;font-family:'Noto Sans Tamil',sans-serif;color:rgba(255,255,255,.7);margin-bottom:6px;}
+.splash-sub{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:36px;text-align:center;}
+.portal-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:960px;}
+.portal-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px 20px;text-align:center;cursor:pointer;transition:.2s;min-width:160px;max-width:190px;flex:1;}
+.portal-card:hover{background:rgba(245,158,11,.15);border-color:var(--sf);transform:translateY(-2px);box-shadow:0 8px 30px rgba(245,158,11,.2);}
+.pc-icon{font-size:36px;margin-bottom:10px;}
+.pc-role{font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;}
+.pc-ta{font-size:11px;font-family:'Noto Sans Tamil',sans-serif;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.pc-desc{font-size:10px;color:rgba(255,255,255,.4);line-height:1.5;}
+.splash-footer{margin-top:32px;font-size:10px;color:rgba(255,255,255,.25);text-align:center;}
+
+/* ═══════ MAIN SHELL ═══════ */
+#app-shell{display:none;min-height:100vh;flex-direction:column;}
+
+/* TOP BAR */
+.top-bar{height:48px;background:var(--ink);display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:900;flex-shrink:0;}
+.tb-logo{width:28px;height:28px;background:var(--sf);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.tb-title{font-size:13px;font-weight:700;color:#fff;flex:1;}
+.tb-title span{color:var(--sf);}
+.tb-role{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);cursor:pointer;flex-shrink:0;}
+.tb-notif{position:relative;cursor:pointer;font-size:18px;}
+.tb-notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;border:1px solid var(--ink);}
+.tb-switch{padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,158,11,.2);color:var(--sf);border:1px solid rgba(245,158,11,.3);cursor:pointer;flex-shrink:0;}
+
+/* MAIN CONTENT AREA */
+.app-content{flex:1;display:flex;overflow:hidden;}
+
+/* ═══════ MOBILE VIEW ═══════ */
+#mobile-view{width:100%;display:flex;justify-content:center;align-items:flex-start;padding:20px;background:#c8c0b0;gap:20px;flex-wrap:wrap;}
+.phone-wrap{flex-shrink:0;}
+.phone-label{text-align:center;font-size:10px;font-weight:700;color:#7a6e60;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.phone-device{width:320px;background:#1C1917;border-radius:44px;padding:12px;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 24px 60px rgba(0,0,0,.5);}
+.phone-screen{background:#F9FAFB;border-radius:33px;overflow:hidden;display:flex;flex-direction:column;min-height:600px;}
+.phone-status{background:#fff;display:flex;justify-content:space-between;padding:8px 18px 4px;font-size:10px;font-weight:700;color:var(--ink);flex-shrink:0;}
+.screen{display:none;flex-direction:column;flex:1;}
+.screen.on{display:flex;}
+
+/* ── Mobile Components ── */
+.app-bar{background:#fff;padding:10px 16px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--g1);flex-shrink:0;}
+.ab-back{color:var(--sf);font-size:18px;font-weight:700;cursor:pointer;line-height:1;}
+.ab-title{font-size:14px;font-weight:700;color:var(--ink);flex:1;}
+.ab-ta{font-size:9px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;display:block;}
+.ab-badge{background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:auto;}
+.scroll-body{flex:1;overflow-y:auto;}
+.scroll-body::-webkit-scrollbar{display:none;}
+.sp{padding:14px 15px;}
+
+/* Hero header */
+.hero{background:linear-gradient(140deg,var(--sf),var(--sf2));padding:14px 16px 18px;flex-shrink:0;}
+.hero-greet{font-size:10px;color:rgba(0,0,0,.5);font-weight:600;margin-bottom:2px;}
+.hero-name{font-size:15px;font-weight:900;color:var(--ink);}
+.hero-school{font-size:10px;color:rgba(0,0,0,.5);margin-bottom:10px;}
+.score-band{background:rgba(255,255,255,.25);border-radius:11px;padding:10px 13px;display:flex;align-items:center;gap:11px;}
+.score-num{font-size:26px;font-weight:900;}
+.score-bar-wrap{flex:1;}
+.score-bar-track{height:7px;background:rgba(0,0,0,.15);border-radius:4px;overflow:hidden;margin-top:4px;}
+.score-bar-fill{height:100%;border-radius:4px;}
+.score-label{font-size:9px;font-weight:700;margin-top:3px;}
+
+/* Icon grid */
+.icon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.ig-btn{background:#fff;border-radius:11px;padding:13px 7px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.ig-btn:hover{border-color:var(--sf);}
+.ig-icon{font-size:26px;display:block;margin-bottom:5px;}
+.ig-label{font-size:9px;font-weight:700;color:var(--ink);display:block;}
+.ig-ta{font-size:8px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;display:block;}
+.ig-btn.danger{background:var(--rl);}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;}
+.pc{background:var(--rl);color:var(--red);}
+.ph{background:var(--ol);color:var(--orange);}
+.pm{background:var(--sf3);color:var(--sf2);}
+.pl{background:var(--gl);color:var(--green);}
+.po{background:var(--rl);color:var(--red);}
+.prv{background:var(--ol);color:var(--orange);}
+.pas{background:var(--bl);color:var(--blue);}
+.pp{background:var(--pl);color:var(--purple);}
+.pdn{background:var(--gl);color:var(--green);}
+
+/* Cards */
+.mcard{background:#fff;border-radius:11px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.mcard-title{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.mcard-ta{font-size:9px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;display:block;margin-bottom:7px;}
+
+/* Report row */
+.rep-row{background:#fff;border-radius:11px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid transparent;cursor:pointer;}
+.rr-c{border-left-color:var(--red);} .rr-h{border-left-color:var(--orange);}
+.rr-m{border-left-color:var(--sf);} .rr-l{border-left-color:var(--green);}
+.rr-title{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.rr-meta{font-size:9px;color:var(--g5);}
+.prog{height:4px;background:var(--g1);border-radius:2px;overflow:hidden;margin-top:6px;}
+.prog-fill{height:100%;border-radius:2px;}
+
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px;border-radius:11px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:.15s;}
+.btn-sf{background:var(--sf);color:var(--ink);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-ghost{background:var(--g0);color:var(--ink);border:1.5px solid var(--g1);}
+.btn-ta{font-size:9px;font-weight:400;font-family:'Noto Sans Tamil',sans-serif;opacity:.7;display:block;margin-top:1px;}
+
+/* Form */
+.fi{margin-bottom:12px;}
+.fl{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:2px;display:block;}
+.fl-ta{font-size:9px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;display:block;margin-bottom:4px;}
+.fi input,.fi select,.fi textarea{width:100%;padding:9px 12px;border:1.5px solid var(--g1);border-radius:8px;font-size:12px;background:#fff;color:var(--ink);outline:none;transition:.15s;font-family:'Inter',sans-serif;}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--sf);}
+.fi textarea{resize:none;min-height:70px;}
+
+/* Category options */
+.cat-opt{display:flex;align-items:center;gap:11px;padding:12px 14px;background:#fff;border-radius:11px;margin-bottom:7px;cursor:pointer;border:2px solid transparent;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.cat-opt:hover,.cat-opt.on{border-color:var(--sf);}
+.cat-opt.on{background:var(--sf3);}
+.co-icon{font-size:24px;width:32px;text-align:center;}
+.co-name{font-size:12px;font-weight:700;color:var(--ink);}
+.co-ta{font-size:9px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;}
+.co-arr{margin-left:auto;color:var(--g3);font-size:14px;}
+
+/* Severity */
+.sev-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+.so{padding:10px 8px;border-radius:9px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.15s;}
+.so .si{font-size:18px;display:block;margin-bottom:3px;}
+.so .sn{font-size:11px;font-weight:700;}
+.so .st{font-size:8px;font-family:'Noto Sans Tamil',sans-serif;opacity:.7;}
+.so.sl{background:var(--gl);color:var(--green);} .so.sm{background:var(--sf3);color:var(--sf2);}
+.so.sh{background:var(--ol);color:var(--orange);} .so.sc{background:var(--rl);color:var(--red);}
+.so.sel{border-color:currentColor;}
+
+/* Emergency */
+.emer-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.eb{background:var(--rl);border-radius:11px;padding:14px 10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.15s;}
+.eb:hover,.eb.on{border-color:var(--red);}
+.eb-icon{font-size:26px;display:block;margin-bottom:4px;}
+.eb-name{font-size:10px;font-weight:700;color:var(--red);}
+.eb-ta{font-size:8px;color:var(--red);opacity:.7;font-family:'Noto Sans Tamil',sans-serif;}
+
+/* Infra rows */
+.infra-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--g0);}
+.infra-row:last-child{border-bottom:none;}
+.ir-left{display:flex;align-items:center;gap:9px;}
+.ir-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.ir-name{font-size:11px;font-weight:600;color:var(--ink);}
+.ir-ta{font-size:9px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;}
+.dot-y{width:22px;height:22px;border-radius:50%;background:var(--gl);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
+.dot-n{width:22px;height:22px;border-radius:50%;background:var(--rl);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
+
+/* Notification */
+.notif-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--g0);}
+.notif-row:last-child{border-bottom:none;}
+.nd{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.nd.nr{background:var(--rl);} .nd.ng{background:var(--gl);}
+.nd.no{background:var(--ol);} .nd.nb{background:var(--bl);}
+.nd.ny{background:var(--sf3);}
+.nt{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.nm{font-size:9px;color:var(--g5);line-height:1.5;}
+.ntime{font-size:8px;color:var(--g3);margin-top:2px;}
+.n-dot{width:6px;height:6px;background:var(--sf);border-radius:50%;flex-shrink:0;margin-top:5px;}
+
+/* OTP */
+.otp-row{display:flex;gap:6px;justify-content:center;margin:10px 0;}
+.otp-box{width:38px;height:44px;border:2px solid var(--g1);border-radius:7px;font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;color:var(--ink);}
+.otp-box.f{border-color:var(--sf);}
+
+/* Role buttons */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:13px;}
+.rb{padding:11px 8px;border-radius:11px;background:#fff;border:2px solid var(--g1);text-align:center;cursor:pointer;transition:.15s;}
+.rb.on{border-color:var(--sf);background:var(--sf3);}
+.rb-icon{font-size:22px;display:block;margin-bottom:3px;}
+.rb-name{font-size:10px;font-weight:700;color:var(--ink);}
+.rb-ta{font-size:8px;color:var(--g5);font-family:'Noto Sans Tamil',sans-serif;}
+
+/* HM */
+.hm-card{background:#fff;border-radius:11px;padding:12px 14px;margin-bottom:9px;border-top:3px solid var(--sf);box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.hm-card.nr2{border-top-color:var(--red);}
+.rc-row{display:flex;gap:5px;margin-top:9px;}
+.rc{flex:1;padding:7px 5px;border-radius:7px;font-size:10px;font-weight:700;border:none;cursor:pointer;text-align:center;}
+.rc-ok{background:var(--gl);color:var(--green);}
+.rc-no{background:var(--rl);color:var(--red);}
+.rc-fwd{background:var(--bl);color:var(--blue);}
+
+/* Progress steps */
+.step-bar{display:flex;gap:3px;margin-bottom:6px;}
+.sb{flex:1;height:3px;border-radius:2px;}
+.sb.done{background:var(--sf);}
+.sb.todo{background:var(--g1);}
+
+/* GPS */
+.gps-chip{display:flex;align-items:center;gap:7px;background:var(--gl);border:1px solid var(--green);border-radius:7px;padding:7px 11px;margin-bottom:12px;font-size:10px;color:var(--green);font-weight:600;}
+
+/* Photo */
+.photo-zone{border:2px dashed var(--g1);border-radius:11px;padding:20px;text-align:center;background:var(--g0);cursor:pointer;margin-bottom:12px;}
+.pz-icon{font-size:32px;margin-bottom:6px;}
+.pz-title{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.pz-sub{font-size:9px;color:var(--g5);}
+.photo-previews{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pt{width:50px;height:50px;border-radius:7px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;}
+.pt-del{position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:var(--red);color:#fff;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+/* Bottom nav */
+.bottom-nav{background:#fff;border-top:1px solid var(--g1);display:flex;padding:7px 4px 11px;flex-shrink:0;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:3px;}
+.bn-ic{font-size:20px;}
+.bn-lb{font-size:7px;font-weight:600;color:var(--g3);}
+.bn-ta{font-size:6px;color:var(--g3);font-family:'Noto Sans Tamil',sans-serif;}
+.bn.on .bn-lb,.bn.on .bn-ta{color:var(--sf);}
+
+/* Confirm screen */
+.confirm-wrap{padding:22px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:11px;}
+.conf-icon{width:68px;height:68px;background:var(--gl);border:2px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;}
+.conf-id{background:var(--sf3);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;color:var(--sf2);}
+
+/* ═══════ WEB DASHBOARD ═══════ */
+#web-view{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.web-layout{display:flex;flex:1;overflow:hidden;}
+
+/* Sidebar */
+.wsb{width:210px;background:var(--ink);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;}
+.wsb::-webkit-scrollbar{display:none;}
+.wsb-brand{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,.07);}
+.wsb-logo{width:34px;height:34px;background:var(--sf);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px;}
+.wsb-title{font-size:13px;font-weight:700;color:#fff;line-height:1.3;}
+.wsb-sub{font-size:9px;color:rgba(255,255,255,.35);margin-top:2px;}
+.wsb-badge{display:inline-block;background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:1px 7px;border-radius:10px;margin-top:5px;}
+.wsb-sec{padding:10px 10px 3px;}
+.wsb-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.25);padding:0 5px;margin-bottom:4px;}
+.wni{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;font-size:11px;font-weight:500;color:rgba(255,255,255,.55);cursor:pointer;transition:.15s;margin-bottom:2px;}
+.wni:hover{background:rgba(255,255,255,.07);color:#fff;}
+.wni.on{background:var(--sf);color:var(--ink);font-weight:700;}
+.wni-ic{font-size:13px;width:17px;text-align:center;}
+.wb-dot{margin-left:auto;background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 5px;border-radius:10px;}
+
+/* Web main */
+.web-main{flex:1;overflow-y:auto;display:flex;flex-direction:column;background:#F3F0EC;}
+.web-main::-webkit-scrollbar{width:5px;}
+.web-main::-webkit-scrollbar-thumb{background:var(--g1);border-radius:3px;}
+.web-topbar{background:#fff;padding:13px 22px;border-bottom:1px solid var(--g1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.web-topbar h3{font-size:15px;font-weight:700;color:var(--ink);}
+.wt-sub{font-size:10px;color:var(--g5);}
+.wt-right{display:flex;gap:7px;align-items:center;}
+.web-inner{padding:18px 22px;flex:1;}
+
+.wpage{display:none;flex:1;flex-direction:column;}
+.wpage.on{display:flex;}
+
+/* KPIs */
+.kpi-row{display:flex;gap:11px;margin-bottom:16px;flex-wrap:wrap;}
+.kpi{background:#fff;border-radius:9px;padding:14px 16px;flex:1;min-width:100px;border-top:3px solid var(--g1);box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.kpi.kr{border-top-color:var(--red);}
+.kpi.ko{border-top-color:var(--orange);}
+.kpi.kg{border-top-color:var(--green);}
+.kpi.kb{border-top-color:var(--blue);}
+.kpi.kp{border-top-color:var(--purple);}
+.kpi-v{font-size:26px;font-weight:900;color:var(--ink);line-height:1;}
+.kpi-l{font-size:9px;color:var(--g5);text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+.kpi-t{font-size:9px;margin-top:3px;}
+
+/* Web cards */
+.wcard{background:#fff;border-radius:9px;padding:15px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:13px;}
+.wcard-title{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:11px;}
+
+/* Table */
+.wtable{width:100%;border-collapse:collapse;font-size:11px;}
+.wtable thead tr{background:var(--g0);}
+.wtable th{padding:8px 11px;text-align:left;font-weight:700;color:var(--g5);text-transform:uppercase;font-size:9px;letter-spacing:.4px;border-bottom:1px solid var(--g1);}
+.wtable td{padding:9px 11px;border-bottom:1px solid #F0EFEE;color:var(--g7);vertical-align:middle;}
+.wtable td strong{color:var(--ink);font-weight:600;}
+.wtable tr:last-child td{border-bottom:none;}
+.wtable tr:hover td{background:var(--g0);}
+
+/* Web buttons */
+.wb{padding:6px 13px;border-radius:6px;font-size:10px;font-weight:600;border:none;cursor:pointer;transition:.15s;}
+.wb-sf{background:var(--sf);color:var(--ink);}
+.wb-ghost{background:none;border:1.5px solid var(--g1);color:var(--g7);}
+.wb-r{background:var(--rl);color:var(--red);}
+.wb-g{background:var(--gl);color:var(--green);}
+.wb-b{background:var(--bl);color:var(--blue);}
+
+/* Map */
+.map-zone{background:#E8F4D4;border-radius:9px;height:200px;position:relative;overflow:hidden;margin-bottom:14px;}
+.map-bg{position:absolute;inset:0;background:radial-gradient(ellipse 55% 45% at 40% 55%,#D1FAE5,transparent 65%),radial-gradient(ellipse 40% 55% at 72% 30%,#FEF3C7,transparent 55%),linear-gradient(135deg,#E8F4D4,#D4EAA8);}
+.map-label{position:absolute;font-size:8px;font-weight:700;background:rgba(255,255,255,.92);padding:1px 6px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.15);}
+.mdot{position:absolute;width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer;transition:transform .15s;}
+.mdot:hover{transform:scale(1.5);}
+.md-r{background:var(--red);} .md-y{background:var(--sf);} .md-g{background:var(--green);}
+.map-legend{position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,.93);border-radius:6px;padding:6px 10px;font-size:9px;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.ml-item{display:flex;align-items:center;gap:5px;margin-bottom:3px;}
+.ml-item:last-child{margin-bottom:0;}
+.ml-dot{width:8px;height:8px;border-radius:50%;}
+
+/* Bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:9px;}
+.bar-label{font-size:10px;color:var(--g7);width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:8px;background:var(--g0);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;}
+.bar-val{font-size:10px;font-weight:700;color:var(--g7);width:30px;text-align:right;}
+
+/* Web login */
+.web-login-shell{display:flex;flex:1;overflow:hidden;}
+.wl-left{flex:1;background:linear-gradient(155deg,#FEF3C7,var(--sf));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;text-align:center;}
+.wl-right{flex:1;background:#fff;padding:36px;display:flex;flex-direction:column;justify-content:center;}
+.wl-right h3{font-size:20px;font-weight:800;margin-bottom:4px;}
+.wl-right p{font-size:11px;color:var(--g5);margin-bottom:22px;}
+.wf-g{margin-bottom:14px;}
+.wf-l{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:4px;display:block;}
+.wf-i{width:100%;padding:10px 13px;border:1.5px solid var(--g1);border-radius:8px;font-size:12px;color:var(--ink);outline:none;transition:.15s;}
+.wf-i:focus{border-color:var(--sf);}
+.role-tabs{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap;}
+.rtab{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--g1);color:var(--g5);background:#fff;transition:.15s;}
+.rtab.on{border-color:var(--sf);background:var(--sf3);color:var(--sf2);}
+
+/* School score row */
+.ssr{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--g0);border-radius:8px;margin-bottom:7px;}
+.ssr-sc{font-size:20px;font-weight:900;width:34px;text-align:center;}
+.ssr-nm{font-size:11px;font-weight:700;color:var(--ink);}
+.ssr-mt{font-size:9px;color:var(--g5);}
+
+/* Selects */
+.wt-select{border:1px solid var(--g1);border-radius:6px;padding:6px 9px;font-size:11px;color:var(--g7);outline:none;}
+
+/* ═══════ PANEL (Right side info) ═══════ */
+.info-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding-top:4px;}
+.ip-card{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);}
+.ip-card h4{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.ip-card p{font-size:10px;color:var(--g5);line-height:1.6;}
+.ip-nav-btn{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:7px;font-size:10px;font-weight:600;border:1px solid var(--g1);background:#fff;color:var(--g7);cursor:pointer;transition:.15s;margin-bottom:5px;}
+.ip-nav-btn:hover{background:var(--sf3);border-color:var(--sf);color:var(--sf2);}
+.ip-nav-btn.active{background:var(--sf);border-color:var(--sf2);color:var(--ink);}
+.pilot-stat{display:flex;justify-content:space-between;font-size:10px;padding:5px 0;border-bottom:1px solid var(--g0);}
+.pilot-stat:last-child{border-bottom:none;}
+.pilot-stat strong{color:var(--ink);}
+
+/* ═══════ MISC ═══════ */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 22px;border-radius:11px;font-size:12px;font-weight:600;z-index:99999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+.toast.ok{background:var(--green);}
+.toast.er{background:var(--red);}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+
+.section-divider{height:1px;background:var(--g1);margin:14px 0;}
+
+/* DB preview */
+.db-preview{background:var(--g0);border-radius:9px;padding:14px;}
+.db-row{display:grid;grid-template-columns:120px 80px 80px 80px 90px 70px;gap:0;border-bottom:1px solid var(--g1);font-size:10px;}
+.db-row:last-child{border-bottom:none;}
+.db-cell{padding:7px 9px;color:var(--g7);}
+.db-cell.hdr{background:var(--ink);color:#fff;font-weight:700;font-size:9px;}
+.db-cell.score-r{color:var(--red);font-weight:700;}
+.db-cell.score-y{color:var(--orange);font-weight:700;}
+.db-cell.score-g{color:var(--green);font-weight:700;}
+
+/* Analytics */
+.ana-stat{background:var(--g0);border-radius:9px;padding:11px 13px;text-align:center;}
+.as-v{font-size:24px;font-weight:900;color:var(--ink);}
+.as-l{font-size:9px;color:var(--g5);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════
+     PORTAL SELECT
+════════════════════════════════════════════════════ -->
+<div id="portal-select">
+  <div class="splash-logo">🏫</div>
+  <div class="splash-title">Krishnagiri <span>School Connect</span></div>
+  <div class="splash-ta">கிருஷ்ணகிரி பள்ளி இணைப்பு</div>
+  <div class="splash-sub">Krishnagiri District · Tamil Nadu · Government School Infrastructure Platform<br>Steps 1–5 Merged · Complete Working Platform</div>
+  <div class="portal-cards">
+    <div class="portal-card" onclick="enterApp('student')">
+      <div class="pc-icon">🧑‍🎓</div>
+      <div class="pc-role">Student</div>
+      <div class="pc-ta">மாணவர்</div>
+      <div class="pc-desc">Report issues, track status, emergency alerts</div>
+    </div>
+    <div class="portal-card" onclick="enterApp('teacher')">
+      <div class="pc-icon">👨‍🏫</div>
+      <div class="pc-role">Teacher</div>
+      <div class="pc-ta">ஆசிரியர்</div>
+      <div class="pc-desc">Verify reports, add classroom needs, track resolution</div>
+    </div>
+    <div class="portal-card" onclick="enterApp('headmaster')">
+      <div class="pc-icon">🏫</div>
+      <div class="pc-role">Headmaster</div>
+      <div class="pc-ta">தலைமையாசிரியர்</div>
+      <div class="pc-desc">Review, approve, forward reports to BEO</div>
+    </div>
+    <div class="portal-card" onclick="enterApp('parent')">
+      <div class="pc-icon">👨‍👩‍👧</div>
+      <div class="pc-role">Parent</div>
+      <div class="pc-ta">பெற்றோர்</div>
+      <div class="pc-desc">Report safety concerns, receive school alerts</div>
+    </div>
+    <div class="portal-card" onclick="enterApp('officer')">
+      <div class="pc-icon">📋</div>
+      <div class="pc-role">Education Officer</div>
+      <div class="pc-ta">கல்வி அதிகாரி</div>
+      <div class="pc-desc">Web dashboard · Assign & resolve issues</div>
+    </div>
+    <div class="portal-card" onclick="enterApp('admin')">
+      <div class="pc-icon">⚙️</div>
+      <div class="pc-role">System Admin</div>
+      <div class="pc-ta">நிர்வாகி</div>
+      <div class="pc-desc">Full platform · All schools · Analytics</div>
+    </div>
+  </div>
+  <div class="splash-footer">MVP Pilot · 5 Schools · Krishnagiri Block · 294 schools in database · June 2025</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════════ -->
+<div id="app-shell" style="display:none;min-height:100vh;flex-direction:column;">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="tb-logo">🏫</div>
+    <div class="tb-title">Krishnagiri <span>School Connect</span></div>
+    <div class="tb-role" id="tb-role-badge" onclick="goPortal()">🧑‍🎓 Student ↩</div>
+    <div class="tb-notif" onclick="goScreen('sc-notif')">🔔<div class="tb-notif-dot"></div></div>
+    <div class="tb-switch" id="view-toggle" onclick="toggleView()">Switch to Web Dashboard</div>
+  </div>
+
+  <div class="app-content">
+
+    <!-- ════ MOBILE VIEW ════ -->
+    <div id="mobile-view">
+      <div class="phone-wrap">
+        <div class="phone-label" id="phone-lbl">PU Middle School, Bargur · Score: 42 🔴</div>
+        <div class="phone-device">
+          <div class="phone-screen">
+            <div class="phone-status"><span>9:41 AM</span><span>●●● 98%</span></div>
+
+            <!-- ── LOGIN ── -->
+            <div class="screen on" id="sc-login">
+              <div style="flex:1;background:linear-gradient(155deg,#FEF3C7,var(--sf));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 18px 16px;text-align:center;">
+                <div style="font-size:54px;margin-bottom:10px;">🏫</div>
+                <div style="font-size:20px;font-weight:900;color:var(--ink);line-height:1.2;">School Connect</div>
+                <div style="font-size:14px;font-family:'Noto Sans Tamil',sans-serif;font-weight:700;color:var(--g7);margin:4px 0 8px;">பள்ளி இணைப்பு</div>
+                <div style="font-size:10px;color:var(--g7);">Krishnagiri · கிருஷ்ணகிரி மாவட்டம்</div>
+              </div>
+              <div style="padding:15px 16px 18px;background:#fff;">
+                <p style="font-size:9px;color:var(--g5);text-align:center;margin-bottom:9px;">Who are you? · நீங்கள் யார்?</p>
+                <div class="role-grid">
+                  <div class="rb on" onclick="pickRole(this,'student')"><span class="rb-icon">🧑‍🎓</span><div class="rb-name">Student</div><div class="rb-ta">மாணவர்</div></div>
+                  <div class="rb" onclick="pickRole(this,'teacher')"><span class="rb-icon">👨‍🏫</span><div class="rb-name">Teacher</div><div class="rb-ta">ஆசிரியர்</div></div>
+                  <div class="rb" onclick="pickRole(this,'headmaster')"><span class="rb-icon">🏫</span><div class="rb-name">Headmaster</div><div class="rb-ta">தலைமையாசிரியர்</div></div>
+                  <div class="rb" onclick="pickRole(this,'parent')"><span class="rb-icon">👨‍👩‍👧</span><div class="rb-name">Parent</div><div class="rb-ta">பெற்றோர்</div></div>
+                </div>
+                <div class="fi"><label class="fl">Mobile Number <span class="fl-ta">கைபேசி எண்</span></label>
+                  <div style="display:flex;gap:6px;"><div style="width:44px;flex-shrink:0;padding:9px;border:1.5px solid var(--g1);border-radius:8px;font-size:12px;text-align:center;">+91</div>
+                  <input value="98765 43210" style="flex:1;padding:9px 11px;border:1.5px solid var(--g1);border-radius:8px;font-size:12px;background:#fff;color:var(--ink);outline:none;"></div>
+                </div>
+                <button class="btn btn-sf" style="margin-bottom:10px;" onclick="doSendOTP()">Send OTP <span class="btn-ta">OTP அனுப்புக</span></button>
+                <div id="otp-area" style="display:none;">
+                  <p style="font-size:10px;color:var(--g7);text-align:center;margin-bottom:7px;">Enter OTP · OTP உள்ளிடவும்</p>
+                  <div class="otp-row"><div class="otp-box f">9</div><div class="otp-box f">4</div><div class="otp-box f">2</div><div class="otp-box">_</div><div class="otp-box">_</div><div class="otp-box">_</div></div>
+                  <button class="btn btn-green" onclick="doLogin()">Verify & Login <span class="btn-ta">சரிபார்த்து உள்நுழைக</span></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── HOME ── -->
+            <div class="screen" id="sc-home">
+              <div class="hero">
+                <div class="hero-greet">வணக்கம் · Hello,</div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                  <div>
+                    <div class="hero-name" id="hero-name">Ravi Kumar 👋</div>
+                    <div class="hero-school" id="hero-school">PU Middle School, Bargur</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,.3);border-radius:10px;padding:3px 10px;font-size:9px;font-weight:700;color:var(--ink);cursor:pointer;" onclick="goScreen('sc-notif')">🔔 3</div>
+                </div>
+                <div class="score-band">
+                  <div>
+                    <div class="score-num" id="hero-score" style="color:var(--red);">42</div>
+                    <div style="font-size:9px;font-weight:700;color:rgba(0,0,0,.5);">SCHOOL SCORE</div>
+                  </div>
+                  <div class="score-bar-wrap">
+                    <div style="font-size:9px;color:rgba(0,0,0,.5);">School Condition</div>
+                    <div class="score-bar-track"><div class="score-bar-fill" id="hero-score-bar" style="width:42%;background:var(--red);"></div></div>
+                    <div class="score-label" style="color:var(--red);">⚠ Critical · கவலைக்குரிய நிலை</div>
+                  </div>
+                </div>
+              </div>
+              <div class="scroll-body">
+                <div class="sp">
+                  <div style="background:var(--rl);border:1px solid var(--red);border-radius:9px;padding:9px 12px;margin-bottom:13px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="goScreen('sc-emergency')">
+                    <span style="font-size:18px;">🚨</span>
+                    <div><div style="font-size:11px;font-weight:700;color:var(--red);">Emergency Alert Active!</div><div style="font-size:9px;color:var(--red);">No water 3 days · தண்ணீர் இல்லை</div></div>
+                    <span style="margin-left:auto;color:var(--red);">→</span>
+                  </div>
+                  <p style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">Quick Actions · விரைவு நடவடிக்கை</p>
+                  <div class="icon-grid">
+                    <div class="ig-btn" onclick="goScreen('sc-report')"><span class="ig-icon">📋</span><span class="ig-label">Report Issue</span><span class="ig-ta">பிரச்சனை</span></div>
+                    <div class="ig-btn danger" onclick="goScreen('sc-emergency')"><span class="ig-icon">🆘</span><span class="ig-label">Emergency</span><span class="ig-ta">அவசரம்</span></div>
+                    <div class="ig-btn" onclick="goScreen('sc-reports')"><span class="ig-icon">📂</span><span class="ig-label">My Reports</span><span class="ig-ta">எனது புகார்</span></div>
+                    <div class="ig-btn" onclick="goScreen('sc-school')"><span class="ig-icon">🏫</span><span class="ig-label">School Info</span><span class="ig-ta">பள்ளி நிலை</span></div>
+                    <div class="ig-btn" onclick="goScreen('sc-notif')"><span class="ig-icon">🔔</span><span class="ig-label">Alerts</span><span class="ig-ta">அறிவிப்பு</span></div>
+                    <div class="ig-btn" onclick="toast('Helpline: 1800-XXX-XXXX 📞')"><span class="ig-icon">📞</span><span class="ig-label">Helpline</span><span class="ig-ta">உதவி</span></div>
+                  </div>
+                  <div class="mcard" style="margin-top:13px;">
+                    <div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:8px;">This Week · இந்த வாரம்</div>
+                    <div class="g3">
+                      <div style="background:var(--rl);border-radius:8px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--red);">3</div><div style="font-size:8px;color:var(--red);">Open</div></div>
+                      <div style="background:var(--ol);border-radius:8px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--orange);">1</div><div style="font-size:8px;color:var(--orange);">In Progress</div></div>
+                      <div style="background:var(--gl);border-radius:8px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--green);">12</div><div style="font-size:8px;color:var(--green);">Resolved</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="bottom-nav">
+                <div class="bn on"><span class="bn-ic">🏠</span><span class="bn-lb">Home</span><span class="bn-ta">முகப்பு</span></div>
+                <div class="bn" onclick="goScreen('sc-report')"><span class="bn-ic">📋</span><span class="bn-lb">Report</span><span class="bn-ta">புகார்</span></div>
+                <div class="bn" onclick="goScreen('sc-reports')"><span class="bn-ic">📂</span><span class="bn-lb">My Issues</span><span class="bn-ta">எனது</span></div>
+                <div class="bn" onclick="goScreen('sc-notif')"><span class="bn-ic">🔔</span><span class="bn-lb">Alerts</span><span class="bn-ta">அறிவிப்பு</span></div>
+              </div>
+            </div>
+
+            <!-- ── REPORT ISSUE ── -->
+            <div class="screen" id="sc-report">
+              <div class="app-bar"><span class="ab-back" onclick="goScreen('sc-home')">←</span><div><div class="ab-title">Report Issue</div><span class="ab-ta">பிரச்சனை புகார்</span></div></div>
+              <div style="background:#fff;padding:8px 16px;border-bottom:1px solid var(--g1);flex-shrink:0;">
+                <div class="step-bar"><div class="sb done"></div><div class="sb done"></div><div class="sb done"></div><div class="sb todo"></div><div class="sb todo"></div></div>
+                <div style="font-size:9px;color:var(--g5);">Step 3 of 5 — Add Details</div>
+              </div>
+              <div class="scroll-body"><div class="sp">
+                <p style="font-size:11px;color:var(--g7);margin-bottom:10px;">What type? · என்ன வகை?</p>
+                <div class="cat-opt on" id="cat-e" onclick="pickCat('e')"><span class="co-icon">🚨</span><div><div class="co-name">Emergency</div><div class="co-ta">அவசர நிலை</div></div><span class="co-arr" id="ca-e">✓</span></div>
+                <div class="cat-opt" id="cat-i" onclick="pickCat('i')"><span class="co-icon">🏗️</span><div><div class="co-name">Infrastructure</div><div class="co-ta">உள்கட்டமைப்பு</div></div><span class="co-arr" id="ca-i">›</span></div>
+                <div class="cat-opt" id="cat-d" onclick="pickCat('d')"><span class="co-icon">📚</span><div><div class="co-name">Educational Needs</div><div class="co-ta">கல்வி தேவை</div></div><span class="co-arr" id="ca-d">›</span></div>
+                <div class="cat-opt" id="cat-s" onclick="pickCat('s')"><span class="co-icon">🚿</span><div><div class="co-name">Sanitation</div><div class="co-ta">சுகாதாரம்</div></div><span class="co-arr" id="ca-s">›</span></div>
+                <div class="section-divider"></div>
+                <div class="photo-zone" onclick="addPhoto()">
+                  <div class="pz-icon">📷</div>
+                  <div class="pz-title">Add Photo or Video</div>
+                  <div class="pz-sub">Tap to use camera or gallery · புகைப்படம் சேர்க்கவும்</div>
+                </div>
+                <div class="photo-previews" id="photo-prev"></div>
+                <div class="fi"><label class="fl">Describe the issue <span class="fl-ta">பிரச்சனையை விவரிக்கவும்</span></label>
+                  <textarea id="desc-field">Water tap in Block A broken for 3 days. 180 students cannot get drinking water. Urgent fix needed.</textarea>
+                </div>
+                <div class="gps-chip">📍 GPS: 12.5243°N, 78.1821°E · Auto-captured</div>
+                <p style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;">Severity · தீவிரம்</p>
+                <div class="sev-grid">
+                  <div class="so sl" onclick="pickSev(this)"><span class="si">🟢</span><div class="sn">Low</div><div class="st">குறைந்த</div></div>
+                  <div class="so sm" onclick="pickSev(this)"><span class="si">🟡</span><div class="sn">Medium</div><div class="st">நடுத்தர</div></div>
+                  <div class="so sh" onclick="pickSev(this)"><span class="si">🟠</span><div class="sn">High</div><div class="st">அதிக</div></div>
+                  <div class="so sc sel" onclick="pickSev(this)"><span class="si">🔴</span><div class="sn">Critical</div><div class="st">அவசர</div></div>
+                </div>
+                <button class="btn btn-red" onclick="submitReport()">🚨 Submit Report <span class="btn-ta">புகாரை சமர்ப்பிக்கவும்</span></button>
+              </div></div>
+            </div>
+
+            <!-- ── EMERGENCY ── -->
+            <div class="screen" id="sc-emergency">
+              <div class="app-bar" style="background:var(--red);">
+                <span class="ab-back" style="color:#fff;" onclick="goScreen('sc-home')">←</span>
+                <div><div class="ab-title" style="color:#fff;">🆘 Emergency</div><span class="ab-ta" style="color:rgba(255,255,255,.7);">அவசர புகார்</span></div>
+              </div>
+              <div style="background:var(--rl);padding:8px 14px;border-bottom:1px solid #FECACA;flex-shrink:0;font-size:10px;color:var(--red);font-weight:700;">⚠ Select type · அவசர வகை தேர்வு செய்யவும்</div>
+              <div class="scroll-body"><div class="sp">
+                <div class="emer-grid">
+                  <div class="eb on" onclick="pickEmer(this)"><span class="eb-icon">💧</span><div class="eb-name">No Water</div><div class="eb-ta">தண்ணீர் இல்லை</div></div>
+                  <div class="eb" onclick="pickEmer(this)"><span class="eb-icon">⚡</span><div class="eb-name">Electrical Danger</div><div class="eb-ta">மின்சார ஆபத்து</div></div>
+                  <div class="eb" onclick="pickEmer(this)"><span class="eb-icon">🏚️</span><div class="eb-name">Unsafe Building</div><div class="eb-ta">பாதுகாப்பற்ற கட்டிடம்</div></div>
+                  <div class="eb" onclick="pickEmer(this)"><span class="eb-icon">🚽</span><div class="eb-name">Toilet Unusable</div><div class="eb-ta">கழிவறை</div></div>
+                  <div class="eb" onclick="pickEmer(this)"><span class="eb-icon">🌊</span><div class="eb-name">Flooding</div><div class="eb-ta">வெள்ளம்</div></div>
+                  <div class="eb" onclick="pickEmer(this)"><span class="eb-icon">🔥</span><div class="eb-name">Fire Safety</div><div class="eb-ta">தீ பாதுகாப்பு</div></div>
+                </div>
+                <div class="fi" style="margin-top:10px;"><label class="fl">What happened? <span class="fl-ta">என்ன நடந்தது?</span></label>
+                  <textarea placeholder="Describe the emergency...">Water tap completely broken. 280 students have no access to drinking water since morning.</textarea>
+                </div>
+                <div style="background:var(--ol);border:1px solid var(--orange);border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:10px;color:var(--orange);">📞 Helpline notified: <strong>1800-XXX-XXXX</strong></div>
+                <button class="btn btn-red" style="font-size:14px;padding:15px;" onclick="submitEmergency()">🆘 SEND EMERGENCY REPORT <span class="btn-ta" style="font-size:10px;">அவசர புகார் அனுப்புக</span></button>
+              </div></div>
+            </div>
+
+            <!-- ── CONFIRM ── -->
+            <div class="screen" id="sc-confirm">
+              <div class="app-bar"><div class="ab-title" style="text-align:center;flex:1;">Submitted! · சமர்ப்பிக்கப்பட்டது!</div></div>
+              <div class="scroll-body"><div class="sp">
+                <div class="confirm-wrap">
+                  <div class="conf-icon">✅</div>
+                  <div style="font-size:18px;font-weight:900;color:var(--ink);">Report Submitted!</div>
+                  <div style="font-size:11px;color:var(--g5);text-align:center;line-height:1.6;">Headmaster and Block Education Officer notified immediately.</div>
+                  <div class="conf-id">Report ID: <span id="conf-id">#KSC-2025-00848</span></div>
+                  <div style="width:100%;background:#fff;border-radius:11px;padding:13px;box-shadow:0 1px 4px rgba(0,0,0,.07);">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:10px;"><span style="color:var(--g5);">Category</span><span id="conf-cat" class="pill pc">Emergency</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:10px;"><span style="color:var(--g5);">Severity</span><span id="conf-sev" class="pill pc">CRITICAL</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:var(--g5);">SLA</span><span style="color:var(--orange);font-weight:700;" id="conf-sla">24 hours</span></div>
+                  </div>
+                  <div style="font-size:9px;color:var(--g5);">SMS updates will be sent at each status change.</div>
+                  <button class="btn btn-sf" onclick="goScreen('sc-reports')">📂 Track My Report</button>
+                  <button class="btn btn-ghost" onclick="goScreen('sc-home')">Back to Home</button>
+                </div>
+              </div></div>
+            </div>
+
+            <!-- ── MY REPORTS ── -->
+            <div class="screen" id="sc-reports">
+              <div class="app-bar"><span class="ab-back" onclick="goScreen('sc-home')">←</span><div><div class="ab-title">My Reports</div><span class="ab-ta">எனது புகார்கள்</span></div></div>
+              <div style="background:#fff;padding:7px 14px;border-bottom:1px solid var(--g1);flex-shrink:0;display:flex;gap:5px;">
+                <div style="padding:4px 11px;border-radius:20px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;cursor:pointer;">All (4)</div>
+                <div style="padding:4px 11px;border-radius:20px;border:1px solid var(--g1);color:var(--g5);font-size:9px;font-weight:700;cursor:pointer;">Open (2)</div>
+                <div style="padding:4px 11px;border-radius:20px;border:1px solid var(--g1);color:var(--g5);font-size:9px;font-weight:700;cursor:pointer;">Resolved (2)</div>
+              </div>
+              <div class="scroll-body"><div class="sp">
+                <div class="rep-row rr-c" onclick="toast('Tracking #KSC-2025-00848')">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+                    <div class="rr-title">💧 No Drinking Water — Block A</div><span class="pill pc">CRITICAL</span>
+                  </div>
+                  <div class="rr-meta">Emergency · 2 hours ago · #KSC-2025-00848</div>
+                  <div style="margin-top:4px;font-size:9px;color:var(--g5);">👷 Assigned: Block Education Officer · SLA: 22h remaining</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;"><span class="pill pp">Work Started</span><span style="font-size:9px;color:var(--g5);">2h ago</span></div>
+                  <div class="prog"><div class="prog-fill" style="width:60%;background:var(--blue);"></div></div>
+                </div>
+                <div class="rep-row rr-m">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+                    <div class="rr-title">🪑 Broken Desks × 3 — Room 4</div><span class="pill pm">MEDIUM</span>
+                  </div>
+                  <div class="rr-meta">Infrastructure · 3 days ago · #KSC-2025-00821</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;"><span class="pill prv">Under Review</span></div>
+                  <div class="prog"><div class="prog-fill" style="width:25%;background:var(--orange);"></div></div>
+                </div>
+                <div class="rep-row rr-l">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+                    <div class="rr-title">📚 Need Library Books — Grade 7</div><span class="pill pl">LOW</span>
+                  </div>
+                  <div class="rr-meta">Educational · 12 days ago · #KSC-2025-00789</div>
+                  <div style="margin-top:3px;font-size:9px;color:var(--green);">✅ Resolved — Books delivered June 12</div>
+                  <div class="prog"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div>
+                </div>
+                <div class="rep-row rr-l">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+                    <div class="rr-title">🌐 Need Internet Access</div><span class="pill pl">LOW</span>
+                  </div>
+                  <div class="rr-meta">Educational · 20 days ago · #KSC-2025-00761</div>
+                  <div style="margin-top:3px;font-size:9px;color:var(--green);">✅ Resolved — BSNL connected June 5</div>
+                  <div class="prog"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div>
+                </div>
+              </div></div>
+              <div class="bottom-nav">
+                <div class="bn" onclick="goScreen('sc-home')"><span class="bn-ic">🏠</span><span class="bn-lb">Home</span><span class="bn-ta">முகப்பு</span></div>
+                <div class="bn" onclick="goScreen('sc-report')"><span class="bn-ic">📋</span><span class="bn-lb">Report</span><span class="bn-ta">புகார்</span></div>
+                <div class="bn on"><span class="bn-ic">📂</span><span class="bn-lb">My Issues</span><span class="bn-ta">எனது</span></div>
+                <div class="bn" onclick="goScreen('sc-notif')"><span class="bn-ic">🔔</span><span class="bn-lb">Alerts</span><span class="bn-ta">அறிவிப்பு</span></div>
+              </div>
+            </div>
+
+            <!-- ── SCHOOL INFO ── -->
+            <div class="screen" id="sc-school">
+              <div class="app-bar"><span class="ab-back" onclick="goScreen('sc-home')">←</span><div><div class="ab-title">School Condition</div><span class="ab-ta">பள்ளி நிலை</span></div></div>
+              <div class="scroll-body"><div class="sp">
+                <div class="mcard" style="margin-bottom:12px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
+                      <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
+                        <circle cx="32" cy="32" r="26" fill="none" stroke="#E7E5E4" stroke-width="7"/>
+                        <circle cx="32" cy="32" r="26" fill="none" stroke="#DC2626" stroke-width="7" stroke-dasharray="69 95" stroke-linecap="round"/>
+                      </svg>
+                      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--red);">42</div>
+                    </div>
+                    <div>
+                      <div style="font-size:13px;font-weight:800;color:var(--red);">Critical Condition</div>
+                      <div style="font-size:9px;color:var(--g5);">PU Middle School, Bargur</div>
+                      <span class="pill po" style="margin-top:5px;display:inline-flex;">8 Open Issues</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="mcard">
+                  <div class="mcard-title">Infrastructure <span class="mcard-ta">உள்கட்டமைப்பு நிலை</span></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--rl);">💧</div><div><div class="ir-name">Drinking Water</div><div class="ir-ta">குடிநீர்</div></div></div><div class="dot-n">✗</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--gl);">🚽</div><div><div class="ir-name">Toilets</div><div class="ir-ta">கழிவறைகள்</div></div></div><div class="dot-y">✓</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--gl);">🚺</div><div><div class="ir-name">Girls Toilet</div><div class="ir-ta">பெண்கள் கழிவறை</div></div></div><div class="dot-y">✓</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--gl);">⚡</div><div><div class="ir-name">Electricity</div><div class="ir-ta">மின்சாரம்</div></div></div><div class="dot-y">✓</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--gl);">🌐</div><div><div class="ir-name">Internet</div><div class="ir-ta">இணையம்</div></div></div><div class="dot-y">✓</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--rl);">💻</div><div><div class="ir-name">Computer Lab</div><div class="ir-ta">கணினி ஆய்வகம்</div></div></div><div class="dot-n">✗</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--gl);">📚</div><div><div class="ir-name">Library</div><div class="ir-ta">நூலகம்</div></div></div><div class="dot-y">✓</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--rl);">🔬</div><div><div class="ir-name">Science Lab</div><div class="ir-ta">அறிவியல் ஆய்வகம்</div></div></div><div class="dot-n">✗</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--gl);">⛹️</div><div><div class="ir-name">Playground</div><div class="ir-ta">விளையாட்டு</div></div></div><div class="dot-y">✓</div></div>
+                  <div class="infra-row"><div class="ir-left"><div class="ir-icon" style="background:var(--rl);">📷</div><div><div class="ir-name">CCTV</div><div class="ir-ta">கண்காணிப்பு</div></div></div><div class="dot-n">✗</div></div>
+                </div>
+                <button class="btn btn-sf" onclick="goScreen('sc-report')" style="padding:12px;">📋 Report a Problem Here <span class="btn-ta">பிரச்சனை புகார் செய்க</span></button>
+              </div></div>
+            </div>
+
+            <!-- ── HEADMASTER ── -->
+            <div class="screen" id="sc-hm">
+              <div class="app-bar"><span class="ab-back" onclick="goScreen('sc-home')">←</span><div><div class="ab-title">HM Review Panel</div><span class="ab-ta">தலைமையாசிரியர் பலகை</span></div><div class="ab-badge">3 NEW</div></div>
+              <div class="scroll-body"><div class="sp">
+                <div class="g3" style="margin-bottom:13px;">
+                  <div style="background:var(--rl);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:18px;font-weight:900;color:var(--red);">3</div><div style="font-size:8px;color:var(--red);">New</div></div>
+                  <div style="background:var(--ol);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:18px;font-weight:900;color:var(--orange);">5</div><div style="font-size:8px;color:var(--orange);">Pending</div></div>
+                  <div style="background:var(--gl);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:18px;font-weight:900;color:var(--green);">12</div><div style="font-size:8px;color:var(--green);">Resolved</div></div>
+                </div>
+                <div class="hm-card nr2">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                    <div><div style="font-size:11px;font-weight:700;color:var(--ink);">💧 No Drinking Water — Block A</div><div style="font-size:9px;color:var(--g5);">Student Ravi Kumar · 2 hrs ago</div><span class="pill pc" style="margin-top:4px;">CRITICAL</span></div>
+                  </div>
+                  <div style="font-size:10px;color:var(--g7);background:var(--g0);border-radius:7px;padding:8px;margin:7px 0;">"Water tap broken 3 days. 180 students affected." — 📷 2 photos · 📍 GPS ✓</div>
+                  <div class="fi" style="margin-bottom:7px;"><input placeholder="Add comment · கருத்து சேர்க்கவும்" style="padding:8px 10px;font-size:11px;border:1.5px solid var(--g1);border-radius:8px;width:100%;outline:none;"></div>
+                  <div class="rc-row">
+                    <div class="rc rc-ok" onclick="hmAction('approve')">✓ Approve</div>
+                    <div class="rc rc-no" onclick="hmAction('reject')">✗ Reject</div>
+                    <div class="rc rc-fwd" onclick="hmAction('forward')">→ BEO</div>
+                  </div>
+                </div>
+                <div class="hm-card">
+                  <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:3px;">🪑 3 Broken Desks in Room 4</div>
+                  <div style="font-size:9px;color:var(--g5);margin-bottom:6px;">Teacher Priya · 1 day ago · <span class="pill pm">MEDIUM</span></div>
+                  <div class="rc-row">
+                    <div class="rc rc-ok" onclick="toast('Approved ✓','ok')">✓ Approve</div>
+                    <div class="rc rc-no" onclick="toast('Rejected')">✗ Reject</div>
+                    <div class="rc rc-fwd" onclick="toast('Forwarded to BEO')">→ BEO</div>
+                  </div>
+                </div>
+                <div class="hm-card">
+                  <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:3px;">🚿 Toilet Drainage Issue</div>
+                  <div style="font-size:9px;color:var(--g5);margin-bottom:6px;">Parent Sunita · 2 days ago · <span class="pill ph">HIGH</span></div>
+                  <div class="rc-row">
+                    <div class="rc rc-ok" onclick="toast('Approved ✓','ok')">✓ Approve</div>
+                    <div class="rc rc-no" onclick="toast('Rejected')">✗ Reject</div>
+                    <div class="rc rc-fwd" onclick="toast('Forwarded to BEO')">→ BEO</div>
+                  </div>
+                </div>
+              </div></div>
+            </div>
+
+            <!-- ── NOTIFICATIONS ── -->
+            <div class="screen" id="sc-notif">
+              <div class="app-bar"><span class="ab-back" onclick="goScreen('sc-home')">←</span><div><div class="ab-title">Notifications</div><span class="ab-ta">அறிவிப்புகள்</span></div><div style="font-size:9px;color:var(--sf);font-weight:700;cursor:pointer;margin-left:auto;" onclick="toast('All marked read')">Mark all read</div></div>
+              <div class="scroll-body"><div class="sp">
+                <div class="notif-row"><div class="nd nr">🔧</div><div style="flex:1;"><div class="nt">Work Started on Your Report</div><div class="nm">Contractor assigned. Water repair started at Block A.</div><div class="ntime">10 min ago · #KSC-2025-00848</div></div><div class="n-dot"></div></div>
+                <div class="notif-row"><div class="nd no">📋</div><div style="flex:1;"><div class="nt">Report Assigned to BEO</div><div class="nm">Block Education Officer Karthik R has taken charge.</div><div class="ntime">1 hour ago</div></div><div class="n-dot"></div></div>
+                <div class="notif-row"><div class="nd ny">✅</div><div style="flex:1;"><div class="nt">HM Approved Your Report</div><div class="nm">Emergency escalated to Block Education Officer.</div><div class="ntime">2 hours ago</div></div><div class="n-dot"></div></div>
+                <div class="notif-row"><div class="nd nb">📥</div><div style="flex:1;"><div class="nt">Report #00848 Submitted</div><div class="nm">Your emergency report was received successfully.</div><div class="ntime">2.5 hours ago</div></div></div>
+                <div class="notif-row"><div class="nd ng">🎉</div><div style="flex:1;"><div class="nt">Library Books Delivered!</div><div class="nm">Grade 7 books arrived. Issue #00789 closed.</div><div class="ntime">5 days ago</div></div></div>
+                <div class="notif-row"><div class="nd ng">🌐</div><div style="flex:1;"><div class="nt">Internet Connected!</div><div class="nm">BSNL broadband setup complete. Issue #00761 closed.</div><div class="ntime">14 days ago</div></div></div>
+              </div></div>
+              <div class="bottom-nav">
+                <div class="bn" onclick="goScreen('sc-home')"><span class="bn-ic">🏠</span><span class="bn-lb">Home</span><span class="bn-ta">முகப்பு</span></div>
+                <div class="bn" onclick="goScreen('sc-report')"><span class="bn-ic">📋</span><span class="bn-lb">Report</span><span class="bn-ta">புகார்</span></div>
+                <div class="bn" onclick="goScreen('sc-reports')"><span class="bn-ic">📂</span><span class="bn-lb">My Issues</span><span class="bn-ta">எனது</span></div>
+                <div class="bn on"><span class="bn-ic">🔔</span><span class="bn-lb">Alerts</span><span class="bn-ta">அறிவிப்பு</span></div>
+              </div>
+            </div>
+
+          </div><!-- phone-screen -->
+        </div><!-- phone-device -->
+      </div><!-- phone-wrap -->
+
+      <!-- INFO PANEL -->
+      <div class="info-panel" id="info-panel">
+        <div class="ip-card">
+          <h4>📱 Mobile App Screens</h4>
+          <p>Tap buttons inside the phone to navigate all screens.</p>
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;">
+            <button class="ip-nav-btn active" onclick="goScreen('sc-home');setActiveNav(this)">🏠 Home</button>
+            <button class="ip-nav-btn" onclick="goScreen('sc-report');setActiveNav(this)">📋 Report Issue</button>
+            <button class="ip-nav-btn" onclick="goScreen('sc-emergency');setActiveNav(this)">🆘 Emergency</button>
+            <button class="ip-nav-btn" onclick="goScreen('sc-reports');setActiveNav(this)">📂 My Reports</button>
+            <button class="ip-nav-btn" onclick="goScreen('sc-school');setActiveNav(this)">🏫 School Info</button>
+            <button class="ip-nav-btn" onclick="goScreen('sc-hm');setActiveNav(this)">✅ HM Review</button>
+            <button class="ip-nav-btn" onclick="goScreen('sc-notif');setActiveNav(this)">🔔 Notifications</button>
+          </div>
+        </div>
+        <div class="ip-card">
+          <h4>Login as Role</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            <button onclick="loginAs('student')" style="padding:5px 10px;border-radius:6px;font-size:10px;font-weight:700;background:var(--bl);color:var(--blue);border:1px solid var(--blue);cursor:pointer;">🧑‍🎓 Student</button>
+            <button onclick="loginAs('teacher')" style="padding:5px 10px;border-radius:6px;font-size:10px;font-weight:700;background:var(--pl);color:var(--purple);border:1px solid var(--purple);cursor:pointer;">👨‍🏫 Teacher</button>
+            <button onclick="loginAs('headmaster')" style="padding:5px 10px;border-radius:6px;font-size:10px;font-weight:700;background:var(--gl);color:var(--green);border:1px solid var(--green);cursor:pointer;">🏫 Headmaster</button>
+            <button onclick="loginAs('parent')" style="padding:5px 10px;border-radius:6px;font-size:10px;font-weight:700;background:var(--sf3);color:var(--sf2);border:1px solid var(--sf);cursor:pointer;">👨‍👩‍👧 Parent</button>
+          </div>
+        </div>
+        <div class="ip-card">
+          <h4>🏫 Pilot Schools (5)</h4>
+          <div style="font-size:10px;line-height:2.0;color:var(--g7);">
+            <div style="display:flex;justify-content:space-between;"><span>PU MS Bargur</span><span style="color:var(--red);font-weight:700;">42 🔴</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Govt HS Krishnagiri</span><span style="color:var(--orange);font-weight:700;">58 🟡</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>ADW PS Hosur</span><span style="color:var(--orange);font-weight:700;">71 🟡</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Corp MS Hosur</span><span style="color:var(--green);font-weight:700;">83 🟢</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Govt PS Denkanikottai</span><span style="color:var(--red);font-weight:700;">39 🔴</span></div>
+          </div>
+        </div>
+        <div class="ip-card" style="background:var(--sf3);border:1px solid var(--sf);">
+          <h4 style="color:var(--sf2);">📊 Pilot Week 1</h4>
+          <div class="pilot-stat"><span>Reports</span><strong>47</strong></div>
+          <div class="pilot-stat"><span>Resolved</span><strong>31 (66%)</strong></div>
+          <div class="pilot-stat"><span>Active Users</span><strong>183</strong></div>
+          <div class="pilot-stat"><span>Avg Response</span><strong>6.2 hrs</strong></div>
+          <div class="pilot-stat"><span>Critical Resolved</span><strong>3 of 4 ✅</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ WEB DASHBOARD VIEW ════ -->
+    <div id="web-view">
+      <div class="web-layout">
+        <!-- SIDEBAR -->
+        <div class="wsb">
+          <div class="wsb-brand">
+            <div class="wsb-logo">🏫</div>
+            <div class="wsb-title">School Connect</div>
+            <div class="wsb-sub">Krishnagiri District</div>
+            <div class="wsb-badge" id="wsb-role">BEO Portal</div>
+          </div>
+          <div class="wsb-sec">
+            <div class="wsb-lbl">Dashboard</div>
+            <div class="wni on" onclick="showWP('wp-map')"><span class="wni-ic">🗺️</span> District Map <span class="wb-dot">5</span></div>
+            <div class="wni" onclick="showWP('wp-schools')"><span class="wni-ic">🏫</span> Schools</div>
+            <div class="wni" onclick="showWP('wp-issues')"><span class="wni-ic">📋</span> Issues <span class="wb-dot">47</span></div>
+            <div class="wni" onclick="showWP('wp-analytics')"><span class="wni-ic">📊</span> Analytics</div>
+            <div class="wni" onclick="showWP('wp-database')"><span class="wni-ic">🗄️</span> Database</div>
+          </div>
+          <div class="wsb-sec">
+            <div class="wsb-lbl">Admin</div>
+            <div class="wni" onclick="showWP('wp-users')"><span class="wni-ic">👤</span> Users</div>
+            <div class="wni" onclick="toast('Report PDF generated','ok')"><span class="wni-ic">📄</span> Reports</div>
+            <div class="wni" onclick="webLogout()"><span class="wni-ic">🚪</span> Logout</div>
+          </div>
+        </div>
+
+        <!-- WEB MAIN -->
+        <div class="web-main">
+
+          <!-- ── MAP DASHBOARD ── -->
+          <div class="wpage on" id="wp-map">
+            <div class="web-topbar"><div><h3>District Dashboard — Krishnagiri MVP Pilot</h3><div class="wt-sub">5 pilot schools · June 2025 · All blocks visible</div></div><div class="wt-right"><button class="wb wb-sf" onclick="toast('Report exported','ok')">↓ Export</button></div></div>
+            <div class="web-inner" style="overflow-y:auto;flex:1;">
+              <div class="kpi-row">
+                <div class="kpi kr"><div class="kpi-v">2</div><div class="kpi-l">Critical Schools</div><div class="kpi-t" style="color:var(--red);">Score below 50</div></div>
+                <div class="kpi ko"><div class="kpi-v">47</div><div class="kpi-l">Open Issues</div><div class="kpi-t" style="color:var(--orange);">Across 5 schools</div></div>
+                <div class="kpi kg"><div class="kpi-v">66%</div><div class="kpi-l">Resolution Rate</div><div class="kpi-t" style="color:var(--green);">↑ Week 1</div></div>
+                <div class="kpi kb"><div class="kpi-v">183</div><div class="kpi-l">Active Users</div><div class="kpi-t" style="color:var(--blue);">Students + Staff</div></div>
+              </div>
+              <div class="map-zone">
+                <div class="map-bg"></div>
+                <div class="mdot md-r" style="left:26%;top:56%;" title="PU MS Bargur — Score:42"></div>
+                <div class="map-label" style="left:16%;top:47%;">PU MS Bargur 🔴 42</div>
+                <div class="mdot md-y" style="left:48%;top:36%;" title="Govt HS KGI — Score:58"></div>
+                <div class="map-label" style="left:40%;top:27%;">Govt HS KGI 🟡 58</div>
+                <div class="mdot md-y" style="left:65%;top:52%;" title="ADW PS Hosur — Score:71"></div>
+                <div class="map-label" style="left:58%;top:42%;">ADW PS Hosur 🟡 71</div>
+                <div class="mdot md-g" style="left:75%;top:35%;" title="Corp MS Hosur — Score:83"></div>
+                <div class="map-label" style="left:70%;top:26%;">Corp MS Hosur 🟢 83</div>
+                <div class="mdot md-r" style="left:37%;top:68%;" title="Govt PS Denkani — Score:39"></div>
+                <div class="map-label" style="left:26%;top:70%;">Govt PS Denkani 🔴 39</div>
+                <div class="map-legend">
+                  <div class="ml-item"><div class="ml-dot" style="background:var(--green);"></div><span style="font-size:9px;">Good (1)</span></div>
+                  <div class="ml-item"><div class="ml-dot" style="background:var(--sf);"></div><span style="font-size:9px;">Needs Attention (2)</span></div>
+                  <div class="ml-item"><div class="ml-dot" style="background:var(--red);"></div><span style="font-size:9px;">Critical (2)</span></div>
+                </div>
+              </div>
+              <div class="wcard">
+                <div class="wcard-title">⚠ Critical Schools — Immediate Action Required</div>
+                <table class="wtable">
+                  <thead><tr><th>School</th><th>Score</th><th>Open</th><th>Critical</th><th>SLA</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>PU MS Bargur</strong><br><span style="font-size:9px;color:var(--g3);">UDISE: 3301004521 · 280 students</span></td><td style="color:var(--red);font-weight:900;font-size:14px;">42</td><td style="color:var(--red);font-weight:700;">8</td><td><span class="pill pc">3 CRITICAL</span></td><td style="color:var(--red);font-weight:700;">OVERDUE</td><td><button class="wb wb-r" onclick="showWP('wp-issues')">Escalate →</button></td></tr>
+                    <tr><td><strong>Govt PS Denkanikottai</strong><br><span style="font-size:9px;color:var(--g3);">UDISE: 3303002190 · 165 students</span></td><td style="color:var(--red);font-weight:900;font-size:14px;">39</td><td style="color:var(--red);font-weight:700;">5</td><td><span class="pill ph">1 HIGH</span></td><td style="color:var(--orange);font-weight:700;">6h left</td><td><button class="wb wb-r" onclick="showWP('wp-issues')">Review →</button></td></tr>
+                    <tr><td><strong>Govt HS Krishnagiri</strong><br><span style="font-size:9px;color:var(--g3);">UDISE: 3301007834 · 450 students</span></td><td style="color:var(--orange);font-weight:900;font-size:14px;">58</td><td style="color:var(--orange);font-weight:700;">3</td><td><span class="pill pm">MEDIUM</span></td><td style="color:var(--green);font-weight:700;">18h left</td><td><button class="wb wb-ghost" onclick="showWP('wp-schools')">View →</button></td></tr>
+                    <tr><td><strong>ADW PS Hosur</strong><br><span style="font-size:9px;color:var(--g3);">UDISE: 3302001204 · 120 students</span></td><td style="color:var(--orange);font-weight:900;font-size:14px;">71</td><td style="color:var(--g5);font-weight:700;">2</td><td><span class="pill pl">LOW</span></td><td style="color:var(--green);">On track</td><td><button class="wb wb-ghost" onclick="showWP('wp-schools')">View →</button></td></tr>
+                    <tr><td><strong>Corp MS Hosur</strong><br><span style="font-size:9px;color:var(--g3);">UDISE: 3302009871 · 310 students</span></td><td style="color:var(--green);font-weight:900;font-size:14px;">83</td><td style="color:var(--green);font-weight:700;">1</td><td><span class="pill pl">LOW</span></td><td style="color:var(--green);">On track</td><td><button class="wb wb-g" onclick="toast('All good ✓','ok')">Good ✓</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── SCHOOLS ── -->
+          <div class="wpage" id="wp-schools">
+            <div class="web-topbar"><div><h3>School Profiles</h3><div class="wt-sub">5 pilot schools · Krishnagiri District</div></div><div class="wt-right"><button class="wb wb-sf" onclick="toast('Profiles exported','ok')">↓ Export</button></div></div>
+            <div class="web-inner" style="overflow-y:auto;flex:1;">
+              <div class="g2">
+                <div>
+                  <div class="wcard">
+                    <div class="wcard-title">School Scores — All Pilot Schools</div>
+                    <div class="ssr"><div class="ssr-sc" style="color:var(--red);">42</div><div><div class="ssr-nm">PU Middle School, Bargur</div><div class="ssr-mt">280 students · 8 teachers · Bargur Block</div></div><div style="margin-left:auto;"><span class="pill pc">Critical</span></div></div>
+                    <div class="ssr"><div class="ssr-sc" style="color:var(--red);">39</div><div><div class="ssr-nm">Govt PS, Denkanikottai</div><div class="ssr-mt">165 students · 5 teachers · Denkani Block</div></div><div style="margin-left:auto;"><span class="pill pc">Critical</span></div></div>
+                    <div class="ssr"><div class="ssr-sc" style="color:var(--orange);">58</div><div><div class="ssr-nm">Govt High School, Krishnagiri</div><div class="ssr-mt">450 students · 14 teachers · KGI Block</div></div><div style="margin-left:auto;"><span class="pill pm">Fair</span></div></div>
+                    <div class="ssr"><div class="ssr-sc" style="color:var(--orange);">71</div><div><div class="ssr-nm">ADW Primary School, Hosur</div><div class="ssr-mt">120 students · 4 teachers · Hosur Block</div></div><div style="margin-left:auto;"><span class="pill pm">Fair</span></div></div>
+                    <div class="ssr" style="margin-bottom:0;"><div class="ssr-sc" style="color:var(--green);">83</div><div><div class="ssr-nm">Corporation MS, Hosur</div><div class="ssr-mt">310 students · 10 teachers · Hosur Block</div></div><div style="margin-left:auto;"><span class="pill pdn">Good</span></div></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="wcard">
+                    <div class="wcard-title">PU MS Bargur — Infrastructure Detail</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px;">
+                      <div style="background:var(--rl);border-radius:6px;padding:6px 8px;color:var(--red);">💧 Water: ✗ No</div>
+                      <div style="background:var(--gl);border-radius:6px;padding:6px 8px;color:var(--green);">🚽 Toilet: ✓ Yes</div>
+                      <div style="background:var(--gl);border-radius:6px;padding:6px 8px;color:var(--green);">⚡ Power: ✓ Yes</div>
+                      <div style="background:var(--gl);border-radius:6px;padding:6px 8px;color:var(--green);">🌐 Internet: ✓ Yes</div>
+                      <div style="background:var(--rl);border-radius:6px;padding:6px 8px;color:var(--red);">💻 Computer: ✗ No</div>
+                      <div style="background:var(--rl);border-radius:6px;padding:6px 8px;color:var(--red);">🔬 Lab: ✗ No</div>
+                      <div style="background:var(--gl);border-radius:6px;padding:6px 8px;color:var(--green);">📚 Library: ✓ Yes</div>
+                      <div style="background:var(--gl);border-radius:6px;padding:6px 8px;color:var(--green);">⛹️ Playground: ✓ Yes</div>
+                      <div style="background:var(--rl);border-radius:6px;padding:6px 8px;color:var(--red);">📷 CCTV: ✗ No</div>
+                      <div style="background:var(--gl);border-radius:6px;padding:6px 8px;color:var(--green);">🚺 Girls Toilet: ✓ Yes</div>
+                    </div>
+                  </div>
+                  <div class="wcard">
+                    <div class="wcard-title">Recent Activity</div>
+                    <div style="font-size:10px;color:var(--g7);line-height:2.0;">
+                      🔴 2h ago — Water tap broken reported<br>🟠 1d ago — Broken desks reported<br>🟢 5d ago — Library books resolved<br>🟢 14d ago — Internet connected<br>📋 20d ago — Inspection completed
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── ISSUES ── -->
+          <div class="wpage" id="wp-issues">
+            <div class="web-topbar"><div><h3>Issue Management</h3><div class="wt-sub">All reported issues — assign, track, resolve</div></div><div class="wt-right"><select class="wt-select"><option>All Severity</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select><button class="wb wb-sf" onclick="toast('Exported','ok')">↓ Export</button></div></div>
+            <div class="web-inner" style="overflow-y:auto;flex:1;">
+              <div class="kpi-row">
+                <div class="kpi kr"><div class="kpi-v">12</div><div class="kpi-l">Critical Open</div></div>
+                <div class="kpi ko"><div class="kpi-v">18</div><div class="kpi-l">High/Medium</div></div>
+                <div class="kpi kg"><div class="kpi-v">31</div><div class="kpi-l">Resolved</div></div>
+                <div class="kpi kb"><div class="kpi-v">6.2h</div><div class="kpi-l">Avg Response</div></div>
+              </div>
+              <div class="wcard">
+                <table class="wtable">
+                  <thead><tr><th>Report #</th><th>School</th><th>Issue</th><th>Reporter</th><th>Severity</th><th>Status</th><th>SLA</th><th>Actions</th></tr></thead>
+                  <tbody id="issue-tbody">
+                    <tr><td><strong style="color:var(--sf2);">#00848</strong></td><td><strong>PU MS Bargur</strong></td><td>💧 No Drinking Water</td><td>Student</td><td><span class="pill pc">CRITICAL</span></td><td><span class="pill pp">In Progress</span></td><td style="color:var(--orange);font-weight:700;">2h left</td><td><div style="display:flex;gap:4px;"><button class="wb wb-g" onclick="resolveIssue(this,'#00848')">✓ Resolve</button><button class="wb wb-ghost" onclick="toast('Viewing #00848')">View</button></div></td></tr>
+                    <tr><td><strong style="color:var(--sf2);">#00839</strong></td><td><strong>Govt PS Denkani.</strong></td><td>🏚️ Unsafe Building</td><td>Teacher</td><td><span class="pill pc">CRITICAL</span></td><td><span class="pill prv">Under Review</span></td><td style="color:var(--red);font-weight:700;">OVERDUE</td><td><div style="display:flex;gap:4px;"><button class="wb wb-r" onclick="toast('Escalated to DEO','ok')">Escalate</button><button class="wb wb-ghost" onclick="assignIssue(this)">Assign</button></div></td></tr>
+                    <tr><td><strong style="color:var(--sf2);">#00831</strong></td><td><strong>Govt HS KGI</strong></td><td>🪑 Broken Desks × 3</td><td>Student</td><td><span class="pill pm">MEDIUM</span></td><td><span class="pill pas">Assigned</span></td><td style="color:var(--green);font-weight:700;">22 days</td><td><div style="display:flex;gap:4px;"><button class="wb wb-g" onclick="resolveIssue(this,'#00831')">✓ Resolve</button><button class="wb wb-ghost" onclick="toast('Viewing #00831')">View</button></div></td></tr>
+                    <tr><td><strong style="color:var(--sf2);">#00825</strong></td><td><strong>ADW PS Hosur</strong></td><td>📚 Need Library Books</td><td>Teacher</td><td><span class="pill pl">LOW</span></td><td><span class="pill pdn">Resolved</span></td><td style="color:var(--green);">Done</td><td><div style="display:flex;gap:4px;"><button class="wb wb-ghost" onclick="toast('Verified ✓','ok')">Verify</button></div></td></tr>
+                    <tr><td><strong style="color:var(--sf2);">#00821</strong></td><td><strong>PU MS Bargur</strong></td><td>🪑 Broken Fan</td><td>Student</td><td><span class="pill pm">MEDIUM</span></td><td><span class="pill prv">Under Review</span></td><td style="color:var(--orange);">7 days</td><td><div style="display:flex;gap:4px;"><button class="wb wb-b" onclick="assignIssue(this)">Assign</button><button class="wb wb-ghost" onclick="toast('Viewing #00821')">View</button></div></td></tr>
+                    <tr><td><strong style="color:var(--sf2);">#00811</strong></td><td><strong>Corp MS Hosur</strong></td><td>🌊 Drainage Issue</td><td>Parent</td><td><span class="pill ph">HIGH</span></td><td><span class="pill pdn">Resolved</span></td><td style="color:var(--green);">Done</td><td><div style="display:flex;gap:4px;"><button class="wb wb-ghost" onclick="toast('Verified ✓','ok')">Verify</button></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── ANALYTICS ── -->
+          <div class="wpage" id="wp-analytics">
+            <div class="web-topbar"><div><h3>Analytics — Pilot Week 1</h3><div class="wt-sub">June 1–7, 2025 · 5 schools · 183 users</div></div><div class="wt-right"><button class="wb wb-sf" onclick="toast('PDF report generated','ok')">↓ PDF Report</button></div></div>
+            <div class="web-inner" style="overflow-y:auto;flex:1;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                <div class="ana-stat" style="flex:1;min-width:80px;"><div class="as-v" style="color:var(--blue);">47</div><div class="as-l">Reports</div></div>
+                <div class="ana-stat" style="flex:1;min-width:80px;"><div class="as-v" style="color:var(--green);">31</div><div class="as-l">Resolved</div></div>
+                <div class="ana-stat" style="flex:1;min-width:80px;"><div class="as-v" style="color:var(--sf2);">6.2h</div><div class="as-l">Avg Response</div></div>
+                <div class="ana-stat" style="flex:1;min-width:80px;"><div class="as-v" style="color:var(--purple);">183</div><div class="as-l">Users</div></div>
+                <div class="ana-stat" style="flex:1;min-width:80px;"><div class="as-v" style="color:var(--red);">12</div><div class="as-l">Critical</div></div>
+                <div class="ana-stat" style="flex:1;min-width:80px;"><div class="as-v" style="color:var(--green);">4.2/5</div><div class="as-l">Satisfaction</div></div>
+              </div>
+              <div class="g2">
+                <div class="wcard">
+                  <div class="wcard-title">Most Common Issues</div>
+                  <div class="bar-chart">
+                    <div class="bar-row"><div class="bar-label">💧 No Drinking Water</div><div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--sky);"></div></div><div class="bar-val">15</div></div>
+                    <div class="bar-row"><div class="bar-label">🚽 Toilet Issues</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:var(--orange);"></div></div><div class="bar-val">11</div></div>
+                    <div class="bar-row"><div class="bar-label">🪑 Broken Desks/Fans</div><div class="bar-track"><div class="bar-fill" style="width:42%;background:var(--purple);"></div></div><div class="bar-val">8</div></div>
+                    <div class="bar-row"><div class="bar-label">💡 Broken Lights</div><div class="bar-track"><div class="bar-fill" style="width:36%;background:var(--sf);"></div></div><div class="bar-val">7</div></div>
+                    <div class="bar-row"><div class="bar-label">📚 Books / Edu Needs</div><div class="bar-track"><div class="bar-fill" style="width:25%;background:var(--green);"></div></div><div class="bar-val">5</div></div>
+                    <div class="bar-row"><div class="bar-label">⚡ Electrical Issues</div><div class="bar-track"><div class="bar-fill" style="width:18%;background:var(--red);"></div></div><div class="bar-val">4</div></div>
+                  </div>
+                </div>
+                <div class="wcard">
+                  <div class="wcard-title">Resolution Rate by School</div>
+                  <div class="bar-chart">
+                    <div class="bar-row"><div class="bar-label">Corp MS Hosur</div><div class="bar-track"><div class="bar-fill" style="width:90%;background:var(--green);"></div></div><div class="bar-val" style="color:var(--green);">90%</div></div>
+                    <div class="bar-row"><div class="bar-label">ADW PS Hosur</div><div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--green);"></div></div><div class="bar-val" style="color:var(--green);">78%</div></div>
+                    <div class="bar-row"><div class="bar-label">Govt HS KGI</div><div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--sf);"></div></div><div class="bar-val" style="color:var(--sf2);">65%</div></div>
+                    <div class="bar-row"><div class="bar-label">PU MS Bargur</div><div class="bar-track"><div class="bar-fill" style="width:44%;background:var(--orange);"></div></div><div class="bar-val" style="color:var(--orange);">44%</div></div>
+                    <div class="bar-row"><div class="bar-label">Govt PS Denkani.</div><div class="bar-track"><div class="bar-fill" style="width:38%;background:var(--red);"></div></div><div class="bar-val" style="color:var(--red);">38%</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="wcard">
+                <div class="wcard-title">Escalation & SLA Status</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:10px;">
+                  <div style="flex:1;background:var(--gl);border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:900;color:var(--green);">3</div><div style="color:var(--green);font-weight:700;">Critical resolved within 24h SLA ✅</div></div>
+                  <div style="flex:1;background:var(--rl);border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:900;color:var(--red);">1</div><div style="color:var(--red);font-weight:700;">SLA breach — building structural issue ⚠</div></div>
+                  <div style="flex:1;background:var(--sf3);border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:900;color:var(--sf2);">78%</div><div style="color:var(--sf2);font-weight:700;">Users prefer Tamil language interface</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── DATABASE PREVIEW ── -->
+          <div class="wpage" id="wp-database">
+            <div class="web-topbar"><div><h3>School Database — Step 1 Master Data</h3><div class="wt-sub">294 schools in Krishnagiri · All 8 blocks · From UDISE+/EMIS</div></div><div class="wt-right"><button class="wb wb-sf" onclick="toast('Full CSV downloaded (294 schools)','ok')">↓ Download CSV</button></div></div>
+            <div class="web-inner" style="overflow-y:auto;flex:1;">
+              <div class="kpi-row">
+                <div class="kpi kb"><div class="kpi-v">294</div><div class="kpi-l">Total Schools</div><div class="kpi-t" style="color:var(--blue);">All 8 blocks</div></div>
+                <div class="kpi kb"><div class="kpi-v">84,156</div><div class="kpi-l">Total Students</div></div>
+                <div class="kpi kr"><div class="kpi-v">110</div><div class="kpi-l">🔴 Critical Schools</div><div class="kpi-t" style="color:var(--red);">Score 0–49</div></div>
+                <div class="kpi ko"><div class="kpi-v">106</div><div class="kpi-l">🟡 Needs Attention</div><div class="kpi-t" style="color:var(--orange);">Score 50–79</div></div>
+                <div class="kpi kg"><div class="kpi-v">78</div><div class="kpi-l">🟢 Good Schools</div><div class="kpi-t" style="color:var(--green);">Score 80–100</div></div>
+              </div>
+              <div class="wcard">
+                <div class="wcard-title">Sample Records — Master Database (294 schools total)</div>
+                <div class="db-preview">
+                  <div class="db-row"><div class="db-cell hdr">School Name</div><div class="db-cell hdr">Block</div><div class="db-cell hdr">Type</div><div class="db-cell hdr">Students</div><div class="db-cell hdr">UDISE</div><div class="db-cell hdr">Score</div></div>
+                  <div class="db-row"><div class="db-cell">PU Middle School Bargur</div><div class="db-cell">Bargur</div><div class="db-cell">Middle</div><div class="db-cell">280</div><div class="db-cell">3301004521</div><div class="db-cell score-r">42 🔴</div></div>
+                  <div class="db-row"><div class="db-cell">Govt High School KGI</div><div class="db-cell">Krishnagiri</div><div class="db-cell">High</div><div class="db-cell">450</div><div class="db-cell">3301007834</div><div class="db-cell score-y">58 🟡</div></div>
+                  <div class="db-row"><div class="db-cell">Govt MS Kaveripattinam</div><div class="db-cell">Kaveripattinam</div><div class="db-cell">Middle</div><div class="db-cell">320</div><div class="db-cell">3302001234</div><div class="db-cell score-r">28 🔴</div></div>
+                  <div class="db-row"><div class="db-cell">ADW Primary School Hosur</div><div class="db-cell">Hosur</div><div class="db-cell">Primary</div><div class="db-cell">120</div><div class="db-cell">3302001204</div><div class="db-cell score-y">71 🟡</div></div>
+                  <div class="db-row"><div class="db-cell">Corp MS Hosur</div><div class="db-cell">Hosur</div><div class="db-cell">Middle</div><div class="db-cell">310</div><div class="db-cell">3302009871</div><div class="db-cell score-g">83 🟢</div></div>
+                  <div class="db-row"><div class="db-cell">Govt PS Denkanikottai</div><div class="db-cell">Denkanikottai</div><div class="db-cell">Primary</div><div class="db-cell">165</div><div class="db-cell">3303002190</div><div class="db-cell score-r">39 🔴</div></div>
+                  <div class="db-row"><div class="db-cell">ADW School Palacode</div><div class="db-cell">Palacode</div><div class="db-cell">Primary</div><div class="db-cell">210</div><div class="db-cell">3308002104</div><div class="db-cell score-r">35 🔴</div></div>
+                  <div class="db-row"><div class="db-cell">Govt MS Uthangarai</div><div class="db-cell">Uthangarai</div><div class="db-cell">Middle</div><div class="db-cell">195</div><div class="db-cell">3306001892</div><div class="db-cell score-r">31 🔴</div></div>
+                  <div class="db-row" style="background:var(--g0);"><div class="db-cell" style="color:var(--g5);font-style:italic;">... 286 more schools ...</div><div class="db-cell"></div><div class="db-cell"></div><div class="db-cell"></div><div class="db-cell"></div><div class="db-cell"></div></div>
+                </div>
+              </div>
+              <div class="wcard">
+                <div class="wcard-title">Block-wise Summary</div>
+                <div class="bar-chart">
+                  <div class="bar-row"><div class="bar-label">Denkanikottai (42 schools)</div><div class="bar-track"><div class="bar-fill" style="width:63%;background:var(--sf);"></div></div><div class="bar-val" style="color:var(--sf2);">63.0</div></div>
+                  <div class="bar-row"><div class="bar-label">Kaveripattinam (37)</div><div class="bar-track"><div class="bar-fill" style="width:61%;background:var(--sf);"></div></div><div class="bar-val" style="color:var(--sf2);">61.4</div></div>
+                  <div class="bar-row"><div class="bar-label">Hosur (27)</div><div class="bar-track"><div class="bar-fill" style="width:60%;background:var(--sf);"></div></div><div class="bar-val" style="color:var(--sf2);">60.1</div></div>
+                  <div class="bar-row"><div class="bar-label">Uthangarai (40)</div><div class="bar-track"><div class="bar-fill" style="width:59%;background:var(--orange);"></div></div><div class="bar-val" style="color:var(--orange);">58.7</div></div>
+                  <div class="bar-row"><div class="bar-label">Shoolagiri (40)</div><div class="bar-track"><div class="bar-fill" style="width:59%;background:var(--orange);"></div></div><div class="bar-val" style="color:var(--orange);">58.5</div></div>
+                  <div class="bar-row"><div class="bar-label">Bargur (27)</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:var(--orange);"></div></div><div class="bar-val" style="color:var(--orange);">55.7</div></div>
+                  <div class="bar-row"><div class="bar-label">Krishnagiri (45)</div><div class="bar-track"><div class="bar-fill" style="width:53%;background:var(--red);"></div></div><div class="bar-val" style="color:var(--red);">53.3</div></div>
+                  <div class="bar-row"><div class="bar-label">Palacode (36)</div><div class="bar-track"><div class="bar-fill" style="width:53%;background:var(--red);"></div></div><div class="bar-val" style="color:var(--red);">53.2</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── USERS ── -->
+          <div class="wpage" id="wp-users">
+            <div class="web-topbar"><div><h3>User Management</h3><div class="wt-sub">183 registered users across 5 pilot schools</div></div><div class="wt-right"><button class="wb wb-sf" onclick="toast('User added','ok')">+ Add User</button></div></div>
+            <div class="web-inner" style="overflow-y:auto;flex:1;">
+              <div class="kpi-row">
+                <div class="kpi kb"><div class="kpi-v">143</div><div class="kpi-l">Students</div></div>
+                <div class="kpi kb"><div class="kpi-v">28</div><div class="kpi-l">Teachers</div></div>
+                <div class="kpi kb"><div class="kpi-v">5</div><div class="kpi-l">Headmasters</div></div>
+                <div class="kpi kb"><div class="kpi-v">7</div><div class="kpi-l">Officers + Admin</div></div>
+              </div>
+              <div class="wcard">
+                <table class="wtable">
+                  <thead><tr><th>Name</th><th>Role</th><th>School</th><th>Language</th><th>Reports</th><th>Last Active</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>Ravi Kumar</strong></td><td><span class="pill pas">Student</span></td><td>PU MS Bargur</td><td>Tamil</td><td>4</td><td>2h ago</td><td><span class="pill pdn">Active</span></td><td><button class="wb wb-ghost" onclick="toast('Profile viewed')">View</button></td></tr>
+                    <tr><td><strong>Priya Sundaram</strong></td><td><span class="pill pp">Teacher</span></td><td>PU MS Bargur</td><td>English</td><td>6</td><td>1h ago</td><td><span class="pill pdn">Active</span></td><td><button class="wb wb-ghost" onclick="toast('Profile viewed')">View</button></td></tr>
+                    <tr><td><strong>Murugan M</strong></td><td><span class="pill pm">Headmaster</span></td><td>PU MS Bargur</td><td>Tamil</td><td>2</td><td>30 min ago</td><td><span class="pill pdn">Active</span></td><td><button class="wb wb-ghost" onclick="toast('Profile viewed')">View</button></td></tr>
+                    <tr><td><strong>Radha K</strong></td><td><span class="pill pm">Headmaster</span></td><td>Govt HS KGI</td><td>English</td><td>1</td><td>3h ago</td><td><span class="pill pdn">Active</span></td><td><button class="wb wb-ghost" onclick="toast('Profile viewed')">View</button></td></tr>
+                    <tr><td><strong>Sunitha B</strong></td><td><span class="pill pl">Parent</span></td><td>PU MS Bargur</td><td>Tamil</td><td>1</td><td>1d ago</td><td><span class="pill pdn">Active</span></td><td><button class="wb wb-ghost" onclick="toast('Profile viewed')">View</button></td></tr>
+                    <tr><td><strong>Karthik R</strong></td><td><span class="pill ph">BEO Officer</span></td><td>All Schools</td><td>English</td><td>0</td><td>Just now</td><td><span class="pill pdn">Active</span></td><td><button class="wb wb-ghost" onclick="toast('Profile viewed')">View</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- web-main -->
+      </div><!-- web-layout -->
+    </div><!-- web-view -->
+
+  </div><!-- app-content -->
+</div><!-- app-shell -->
+
+<script>
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let STATE = {
+  role: 'student',
+  view: 'mobile',
+  reportCount: 848,
+  photos: 0,
+  selectedCat: 'e',
+  selectedSev: 'critical',
+};
+
+const ROLE_DATA = {
+  student:    { name:'Ravi Kumar',     school:'PU Middle School, Bargur',    score:42, scoreColor:'var(--red)',    scoreLabel:'Critical'},
+  teacher:    { name:'Priya Sundaram', school:'PU Middle School, Bargur',    score:42, scoreColor:'var(--red)',    scoreLabel:'Critical'},
+  headmaster: { name:'HM Murugan M',   school:'PU Middle School, Bargur',    score:42, scoreColor:'var(--red)',    scoreLabel:'Critical'},
+  parent:     { name:'Sunitha Kumar',  school:'PU Middle School, Bargur',    score:42, scoreColor:'var(--red)',    scoreLabel:'Critical'},
+  officer:    { name:'BEO Karthik R',  school:'Krishnagiri District — All Schools', score:null},
+  admin:      { name:'System Admin',   school:'Krishnagiri District — All Schools', score:null},
+};
+
+/* ══════════════════════════════════════════════
+   PORTAL
+══════════════════════════════════════════════ */
+function enterApp(role) {
+  STATE.role = role;
+  document.getElementById('portal-select').style.display = 'none';
+  const shell = document.getElementById('app-shell');
+  shell.style.display = 'flex';
+
+  const rd = ROLE_DATA[role];
+  const badge = document.getElementById('tb-role-badge');
+  const icons = {student:'🧑‍🎓',teacher:'👨‍🏫',headmaster:'🏫',parent:'👨‍👩‍👧',officer:'📋',admin:'⚙️'};
+  badge.textContent = icons[role] + ' ' + role.charAt(0).toUpperCase()+role.slice(1) + ' ↩';
+
+  if (role === 'officer' || role === 'admin') {
+    STATE.view = 'web';
+    showView('web');
+    document.getElementById('wsb-role').textContent = role === 'admin' ? 'System Admin' : 'BEO Portal';
+  } else {
+    STATE.view = 'mobile';
+    showView('mobile');
+    // Set hero data
+    document.getElementById('hero-name').textContent = rd.name + ' 👋';
+    document.getElementById('hero-school').textContent = rd.school;
+    document.getElementById('hero-score').textContent = rd.score;
+    document.getElementById('hero-score').style.color = rd.scoreColor;
+    document.getElementById('hero-score-bar').style.width = rd.score + '%';
+    document.getElementById('hero-score-bar').style.background = rd.scoreColor;
+
+    if (role === 'headmaster') {
+      goScreen('sc-hm');
+    } else {
+      goScreen('sc-home');
+    }
+  }
+  toast('Welcome, ' + rd.name + '!', 'ok');
+}
+
+function goPortal() {
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('portal-select').style.display = 'flex';
+}
+
+/* ══════════════════════════════════════════════
+   VIEW TOGGLE
+══════════════════════════════════════════════ */
+function showView(v) {
+  const mv = document.getElementById('mobile-view');
+  const wv = document.getElementById('web-view');
+  const btn = document.getElementById('view-toggle');
+  if (v === 'mobile') {
+    mv.style.display = 'flex';
+    wv.style.display = 'none';
+    btn.textContent = 'Switch to Web Dashboard';
+  } else {
+    mv.style.display = 'none';
+    wv.style.display = 'flex';
+    btn.textContent = 'Switch to Mobile App';
+  }
+  STATE.view = v;
+}
+
+function toggleView() {
+  showView(STATE.view === 'mobile' ? 'web' : 'mobile');
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE NAVIGATION
+══════════════════════════════════════════════ */
+function goScreen(id) {
+  document.querySelectorAll('.phone-screen .screen').forEach(s => s.classList.remove('on'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('on');
+  const labels = {
+    'sc-login':'Login Screen · உள்நுழைவு',
+    'sc-home':'Home Dashboard · முகப்பு',
+    'sc-report':'Report Issue · பிரச்சனை புகார்',
+    'sc-emergency':'Emergency Report · அவசர புகார்',
+    'sc-confirm':'Submitted! · சமர்ப்பிக்கப்பட்டது',
+    'sc-reports':'My Reports · எனது புகார்கள்',
+    'sc-school':'School Condition · பள்ளி நிலை',
+    'sc-hm':'Headmaster Review · தலைமையாசிரியர் பலகை',
+    'sc-notif':'Notifications · அறிவிப்புகள்',
+  };
+  document.getElementById('phone-lbl').textContent = labels[id] || 'App Screen';
+}
+
+/* ══════════════════════════════════════════════
+   LOGIN FLOW
+══════════════════════════════════════════════ */
+function doSendOTP() {
+  document.getElementById('otp-area').style.display = 'block';
+  toast('OTP sent to +91 98765 43210', 'ok');
+}
+
+function doLogin() {
+  const rd = ROLE_DATA[STATE.role];
+  document.getElementById('hero-name').textContent = rd.name + ' 👋';
+  document.getElementById('hero-school').textContent = rd.school;
+  if (rd.score) {
+    document.getElementById('hero-score').textContent = rd.score;
+    document.getElementById('hero-score').style.color = rd.scoreColor;
+    document.getElementById('hero-score-bar').style.width = rd.score + '%';
+    document.getElementById('hero-score-bar').style.background = rd.scoreColor;
+  }
+  if (STATE.role === 'headmaster') {
+    goScreen('sc-hm');
+  } else {
+    goScreen('sc-home');
+  }
+  toast('Welcome, ' + rd.name + '!', 'ok');
+}
+
+function pickRole(el, role) {
+  document.querySelectorAll('.rb').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  STATE.role = role;
+}
+
+function loginAs(role) {
+  STATE.role = role;
+  document.querySelectorAll('.rb').forEach(b => b.classList.remove('on'));
+  goScreen('sc-login');
+  setTimeout(() => {
+    doSendOTP();
+    setTimeout(() => doLogin(), 300);
+  }, 200);
+}
+
+/* ══════════════════════════════════════════════
+   REPORT FLOW
+══════════════════════════════════════════════ */
+function pickCat(c) {
+  ['e','i','d','s'].forEach(k => {
+    const el = document.getElementById('cat-'+k);
+    const ch = document.getElementById('ca-'+k);
+    if (el) el.classList.toggle('on', k===c);
+    if (ch) ch.textContent = k===c ? '✓' : '›';
+  });
+  STATE.selectedCat = c;
+}
+
+function pickSev(el) {
+  document.querySelectorAll('.so').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel');
+  const n = el.querySelector('.sn').textContent;
+  STATE.selectedSev = n.toLowerCase();
+}
+
+function addPhoto() {
+  STATE.photos++;
+  const emojis = ['🚰','💧','🏚️','🪑','💡','🚽','📚','🌊'];
+  const area = document.getElementById('photo-prev');
+  const div = document.createElement('div');
+  div.className = 'pt';
+  div.innerHTML = emojis[Math.floor(Math.random()*emojis.length)] + `<div class="pt-del" onclick="this.parentNode.remove();STATE.photos--">×</div>`;
+  area.appendChild(div);
+  toast('Photo ' + STATE.photos + ' added ✓', 'ok');
+}
+
+const SLA_MAP = {critical:'24 hours', high:'7 days', medium:'30 days', low:'60 days'};
+const CAT_LABELS = {e:'Emergency', i:'Infrastructure', d:'Educational Needs', s:'Sanitation'};
+const SEV_CLASS = {critical:'pc', high:'ph', medium:'pm', low:'pl'};
+
+function submitReport() {
+  STATE.reportCount++;
+  const ref = '#KSC-2025-' + String(STATE.reportCount).padStart(5,'0');
+  document.getElementById('conf-id').textContent = ref;
+  const sev = STATE.selectedSev;
+  const cat = CAT_LABELS[STATE.selectedCat] || 'Emergency';
+  document.getElementById('conf-cat').className = 'pill ' + (SEV_CLASS[sev]||'pc');
+  document.getElementById('conf-cat').textContent = cat;
+  document.getElementById('conf-sev').className = 'pill ' + (SEV_CLASS[sev]||'pc');
+  document.getElementById('conf-sev').textContent = sev.toUpperCase();
+  document.getElementById('conf-sla').textContent = SLA_MAP[sev] || '24 hours';
+  STATE.photos = 0;
+  document.getElementById('photo-prev').innerHTML = '';
+  goScreen('sc-confirm');
+  toast(ref + ' submitted!', 'ok');
+}
+
+function submitEmergency() {
+  STATE.reportCount++;
+  const ref = '#KSC-2025-' + String(STATE.reportCount).padStart(5,'0');
+  document.getElementById('conf-id').textContent = ref;
+  document.getElementById('conf-cat').textContent = 'Emergency';
+  document.getElementById('conf-cat').className = 'pill pc';
+  document.getElementById('conf-sev').textContent = 'CRITICAL';
+  document.getElementById('conf-sev').className = 'pill pc';
+  document.getElementById('conf-sla').textContent = '24 hours';
+  goScreen('sc-confirm');
+  toast('🆘 Emergency reported! BEO notified immediately.', 'ok');
+}
+
+function pickEmer(el) {
+  document.querySelectorAll('.eb').forEach(e => e.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function hmAction(action) {
+  const msgs = {approve:'✓ Report approved & escalated to BEO', reject:'Report rejected with reason saved', forward:'📨 Forwarded to Block Education Officer'};
+  toast(msgs[action] || 'Done', action==='approve'?'ok':'');
+}
+
+function setActiveNav(btn) {
+  document.querySelectorAll('.ip-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════════════
+   WEB DASHBOARD
+══════════════════════════════════════════════ */
+function showWP(id) {
+  document.querySelectorAll('.wpage').forEach(p => p.classList.remove('on'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('on');
+  const map = {'wp-map':0,'wp-schools':1,'wp-issues':2,'wp-analytics':3,'wp-database':4,'wp-users':5};
+  const items = document.querySelectorAll('.wni');
+  items.forEach(n => n.classList.remove('on'));
+  if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('on');
+}
+
+function webLogout() {
+  showView('mobile');
+  goPortal();
+}
+
+function resolveIssue(btn, ref) {
+  const row = btn.closest('tr');
+  if (!row) return;
+  const statusCell = row.cells[5];
+  if (statusCell) statusCell.innerHTML = '<span class="pill pdn">Resolved</span>';
+  const slaCell = row.cells[6];
+  if (slaCell) { slaCell.textContent = 'Done'; slaCell.style.color = 'var(--green)'; }
+  btn.textContent = '✓ Done';
+  btn.className = 'wb wb-ghost';
+  btn.disabled = true;
+  toast(ref + ' marked resolved ✓', 'ok');
+}
+
+function assignIssue(btn) {
+  const row = btn.closest('tr');
+  const statusCell = row ? row.cells[5] : null;
+  if (statusCell) statusCell.innerHTML = '<span class="pill pas">Assigned</span>';
+  btn.textContent = '✓ Assigned';
+  btn.className = 'wb wb-ghost';
+  btn.disabled = true;
+  toast('Issue assigned to field officer', 'ok');
+}
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>

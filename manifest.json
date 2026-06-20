@@ -1,0 +1,43 @@
+{
+  "name": "Krishnagiri School Connect",
+  "short_name": "KSC",
+  "description": "Government School Infrastructure Reporting Platform - Krishnagiri District, Tamil Nadu",
+  "start_url": "./KSC_Complete_Platform.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a2744",
+  "theme_color": "#F59E0B",
+  "lang": "ta",
+  "categories": ["education", "government", "productivity"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Report Issue",
+      "short_name": "Report",
+      "description": "Report a school issue quickly",
+      "url": "./KSC_Complete_Platform.html#report",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Emergency",
+      "short_name": "SOS",
+      "description": "Report an emergency",
+      "url": "./KSC_Complete_Platform.html#emergency",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    }
+  ]
+}
